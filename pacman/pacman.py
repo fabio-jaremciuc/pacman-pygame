@@ -6,6 +6,7 @@ pygame.init()
 YELLOW = (255, 255, 0)
 BLACK = (0, 0, 0)
 BLUE = (0, 0, 255)
+RED = (255, 0, 0)
 WHITE = (255, 255, 255)
 VELOCITY = 1
 
@@ -23,8 +24,8 @@ class GameElement(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def events_processing(self, events):
-        for e in events:
+    def events_processing(self, evts):
+        for e in evts:
             if e.type == pygame.QUIT:
                 exit()
 
@@ -67,8 +68,8 @@ class Pacman(GameElement):
         eye_radius = int(self.radius / 6)
         pygame.draw.circle(screen, BLACK, (eye_x, eye_y), eye_radius, 0)
 
-    def events_processing(self, events):
-        for e in events:
+    def events_processing(self, evts):
+        for e in evts:
             self.key_down(e)
             self.key_up(e)
 
@@ -173,12 +174,44 @@ class Scenario(GameElement):
                 self.point += 1
                 self.matrix[row][col] = 0
 
+    def events_processing(self, evts):
+        pass
+
+
+class Ghost(GameElement):
+    def __init__(self, color, size):
+        self.column = 6.0
+        self.row = 8.0
+        self.size = size
+        self.color = color
+
+    def print(self, screen):
+        side = self.size // 8
+        pixel_x = int(self.column * self.size)
+        pixel_y = int(self.row * self.size)
+        ghost_curve = [(pixel_x, pixel_y + self.size),
+                       (pixel_x + side, pixel_y + side * 2),
+                       (pixel_x + side * 2, pixel_y + side // 2),
+                       (pixel_x + side * 3, pixel_y),
+                       (pixel_x + side * 5, pixel_y),
+                       (pixel_x + side * 6, pixel_y + side // 2),
+                       (pixel_x + side * 7, pixel_y + side * 2),
+                       (pixel_x + size, pixel_y + size)]
+        pygame.draw.polygon(screen, self.color, ghost_curve, 0)
+
+        pass
+
+    def movement_rules(self):
+        pass
+
     def events_processing(self, events):
         pass
+
 
 if __name__ == "__main__":
     size = 600 // 30
     pacman = Pacman(size)
+    blink = Ghost(RED, size)
     scenario = Scenario(size, pacman)
 
     while True:
@@ -190,6 +223,7 @@ if __name__ == "__main__":
         screen.fill(BLACK)
         scenario.print(screen)
         pacman.print(screen)
+        blink.print(screen)
         pygame.display.update()
         pygame.time.delay(100)
 
